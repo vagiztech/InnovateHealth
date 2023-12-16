@@ -17,6 +17,7 @@ from tensorflow import keras
 from keras import layers
 from functools import partial
 
+# Получаем текущую директорию скрипта и устанавливаем её как рабочую
 current_directory = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_directory)
 
@@ -32,14 +33,16 @@ images = glob('train_cancer/*/*.jpg')
 
 # Выводим количество найденных изображений
 #print(len(images))
-
+# Замена обратных слешей на прямые в путях к изображениям
 images = [path.replace('\\', '/') for path in images]
-df = pd.DataFrame({'filepath': images})
+df = pd.DataFrame({'filepath': images}) # Создание DataFrame
 df['label'] = df['filepath'].str.split('/', expand=True)[1]
 #print(df.head())
 
-df['label_bin'] = np.where(df['label'].values == 'malignant', 1, 0)
+df['label_bin'] = np.where(df['label'].values == 'malignant', 1, 0) # Создание бинарных меток (0 - benign, 1 - malignant)
 df.head()
+
+# Визуализация распределения меток в виде круговой диаграммы
 x = df['label'].value_counts()
 
 plt.pie(x.values,
@@ -47,6 +50,8 @@ plt.pie(x.values,
 		autopct='%1.1f%%')
 plt.show()
 
+
+# Отображение случайных изображений для каждой категории
 for cat in df['label'].unique():
 	temp = df[df['label'] == cat]
 
@@ -65,6 +70,8 @@ for cat in df['label'].unique():
 plt.tight_layout()
 plt.show()
 
+
+# Подготовка данных для обучения модели
 features = df['filepath']
 target = df['label_bin']
 
@@ -75,6 +82,8 @@ X_train, X_val,\
 
 X_train.shape, X_val.shape
 
+
+# Создание функции для декодирования изображений и меток
 def decode_image(filepath, label=None):
 
 	img = tf.io.read_file(filepath)
@@ -89,7 +98,7 @@ def decode_image(filepath, label=None):
 
 	return img, Label
 
-
+# Создание TensorFlow Dataset для обучающей и валидационной выборок
 train_ds = (
 	tf.data.Dataset
 	.from_tensor_slices((X_train, Y_train))
