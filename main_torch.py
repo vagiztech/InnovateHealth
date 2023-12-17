@@ -19,22 +19,36 @@ import shutil
 # !unzip -q skin-cancer-mnist-ham10000.zip -d data_cancer/
 # Пути к файлам и папкам
 # csv_file = 'data_cancer/HAM10000_metadata.csv'
-# images_dir = 'data_cancer/HAM10000_images_part_2'
+# images_dir_1 = 'data_cancer/HAM10000_images_part_1'
+# images_dir_2 = 'data_cancer/HAM10000_images_part_2'
 
 # # Чтение CSV-файла
 # metadata = pd.read_csv(csv_file)
 
-# # Перебор строк в DataFrame
+# # Перебор строк в DataFrame 1
 # for index, row in metadata.iterrows():
 #     image_name = row['image_id'] + '.jpg'  # предполагаем, что расширение файлов .jpg
 #     class_name = row['dx']
-#     source_path = os.path.join(images_dir, image_name)
-#     target_dir = os.path.join(images_dir, class_name)
+#     source_path = os.path.join(images_dir_1, image_name)
+#     target_dir = os.path.join(images_dir_1, class_name)
 
 #     # Проверка наличия файла и перемещение
 #     if os.path.exists(source_path):
 #         os.makedirs(target_dir, exist_ok=True)
 #         shutil.move(source_path, os.path.join(target_dir, image_name))
+
+# # Перебор строк в DataFrame 2
+# for index, row in metadata.iterrows():
+#     image_name = row['image_id'] + '.jpg'  # предполагаем, что расширение файлов .jpg
+#     class_name = row['dx']
+#     source_path = os.path.join(images_dir_2, image_name)
+#     target_dir = os.path.join(images_dir_2, class_name)
+
+#     # Проверка наличия файла и перемещение
+#     if os.path.exists(source_path):
+#         os.makedirs(target_dir, exist_ok=True)
+#         shutil.move(source_path, os.path.join(target_dir, image_name))
+
 
 # Определяем преобразования для предобработки изображений
 transform = transforms.Compose([
