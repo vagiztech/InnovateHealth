@@ -149,3 +149,14 @@ print('acc_train:', acc_train, '\nacc_valid:', acc_valid)
 # Очищаем память GPU и удаляем модель
 del model
 torch.cuda.empty_cache()
+
+#Визуализация результатов
+import matplotlib as plt
+def plot_loss(Loss_train, Loss_val):
+    plt.figure(figsize=(12, 5))
+    plt.plot(range(len(Loss_train)), Loss_train, color='orange', label='train', linestyle='--')
+    plt.plot(range(len(Loss_val)), Loss_val, color='blue', marker='o', label='val')
+    plt.legend()
+    plt.show()
+
+plot_loss(loss_train, loss_valid)
