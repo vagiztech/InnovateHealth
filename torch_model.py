@@ -156,3 +156,80 @@ model = model.to(device)
 loss_train, acc_train, loss_valid, acc_valid = train(
 model, optimizer, train_loader, valid_loader, 30)
 print('acc_train:', acc_train, '\nacc_valid:', acc_valid)
+
+import matplotlib.pyplot as plt
+
+# Функция для построения графика потерь
+def plot_loss(Loss_train, Loss_val):
+    plt.figure(figsize=(12, 5))
+    plt.plot(range(len(Loss_train)), Loss_train, color='orange', label='train', linestyle='--')
+    plt.plot(range(len(Loss_val)), Loss_val, color='blue', marker='o', label='val')
+    plt.legend()
+    plt.show()
+
+# Построение графика потерь на обучающем и валидационном наборах данных
+plot_loss(loss_train, loss_valid)
+
+# Сохранение модели
+torch.save(model, '/weights30.pt')
+
+# Загрузка и предобработка изображения
+def load_and_preprocess_image(image_path):
+    image = Image.open(image_path)
+    transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+    input_tensor = transform(image)
+    input_batch = input_tensor.unsqueeze(0)  # добавляем размерность пакета
+
+    return input_batch
+
+# Функция для предсказывания класса изображения
+def predict_image_class(image_path, model):
+    input_tensor = load_and_preprocess_image(image_path)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    input_tensor = input_tensor.to(device)
+    model = model.to(device)
+
+    model.eval()
+
+    with torch.no_grad():
+        output = model(input_tensor)
+
+    _, predicted_class = torch.max(output, 1)
+
+    return predicted_class.item()
+
+# Список классов
+predicted_class_name = full_dataset.classes[:]
+print(predicted_class_name)
+
+# Путь к изображению для предикта
+image_path = "/content/data_cancer/HAM10000_images_part_2/bkl/ISIC_0030561.jpg"
+predicted_class = predict_image_class(image_path, model)
+
+print(f"Модель предсказывает класс: {predicted_class_name[predicted_class]}")
+
+# Функция для тестирования модели на папке с изображениями
+def test_model_lul(Patch):
+    test_dict = {}
+    folder_path = Patch
+
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        if os.path.isfile(file_path):
+            predicted_class = predict_image_class(file_path, model)
+            pred = predicted_class_name[predicted_class]
+            if pred in test_dict.keys():
+                test_dict[pred] += 1
+            else:
+                test_dict[pred] = 0
+    return test_dict
+
+# Пример вызова функции для тестирования модели на папке
+test_results = test_model_lul('/content/data_cancer/HAM10000_images_part_1/mel')
+print(test_results)
