@@ -42,7 +42,7 @@ metadata = pd.read_csv(csv_file)
 # Функция для сортировки данных по папкам
 def sort_data_by_folder(csv_file, images_dir, metadata):
     for index, row in metadata.iterrows():
-        image_name = row['image_id'] + '.jpg'  # предполагаем, что расширение файлов .jpg
+        image_name = row['image_id'] + '.jpg'
         class_name = row['dx']
         source_path = os.path.join(images_dir, image_name)
         target_dir = os.path.join(images_dir, class_name)
@@ -68,16 +68,16 @@ transform = transforms.Compose([
 full_dataset = ImageFolder(root='data_cancer/HAM10000_images_part_2', transform=transform)
 num_classes = len(full_dataset.classes)
 
-# Разделение датасета на тренировочную и валидационную выборки
+# Разделение датасета на тренировочную и валидационную выборку
 train_size = int(0.8 * len(full_dataset))
 valid_size = len(full_dataset) - train_size
 train_dataset, valid_dataset = random_split(full_dataset, [train_size, valid_size])
 
-# Загрузчики данных
+# Загрузчика данных
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 valid_loader = DataLoader(valid_dataset, batch_size=32, shuffle=True)
 
-# Определение архитектуры модели GoogleNet
+# Модель GoogleNet
 def google():
     model = models.googlenet(weights=models.GoogLeNet_Weights.IMAGENET1K_V1)
     model.fc = torch.nn.Linear(1024, num_classes)
