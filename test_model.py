@@ -72,4 +72,4 @@ for filename in os.listdir(folder_path):
     image_path = os.path.join(folder_path, filename)
     if os.path.isfile(image_path):
         predicted_class = classify_image(image_path, model)
-        print(f"Изображение {filename} классифицировано как класс {predicted_class_name[predicted_class]}")
+        print(f"Изображение {filename} классифицировано как рак типа: {predicted_class_name[predicted_class]}")
