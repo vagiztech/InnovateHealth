@@ -208,11 +208,16 @@ def predict_image_class(image_path, model):
 predicted_class_name = full_dataset.classes[:]
 print(predicted_class_name)
 
-# Путь к изображению для предикта
-image_path = "/content/data_cancer/HAM10000_images_part_2/bkl/ISIC_0030561.jpg"
-predicted_class = predict_image_class(image_path, model)
+weights_path = '/content/weights30.pt'
+model = torch.load(weights_path)
 
-print(f"Модель предсказывает класс: {predicted_class_name[predicted_class]}")
+# Путь к изображению для предикта
+image_path = "/content/data_cancer/HAM10000_images_part_1/nv/ISIC_0024321.jpg"
+def predict_class_image(image_path, model=model):
+  predicted_class = predict_image_class(image_path, model)
+  return predicted_class_name[predicted_class]
+print(f"Модель предсказывает класс: {predict_class_image(image_path)}")
+
 
 # Функция для тестирования модели на папке с изображениями
 def test_model_lul(Patch):
@@ -231,5 +236,51 @@ def test_model_lul(Patch):
     return test_dict
 
 # Пример вызова функции для тестирования модели на папке
-test_results = test_model_lul('/content/data_cancer/HAM10000_images_part_1/mel')
+test_results = test_model_lul('/content/data_cancer/HAM10000_images_part_1/nv')
 print(test_results)
+
+columns = ['pacientID','full name', 'Typeofdisease', 'Cancer']
+df_doctor = pd.DataFrame(columns=columns)
+
+# Функция для заполнения следующей строки
+def fill_string(values, dataframe):
+    new_string = pd.Series(values, index=dataframe.columns)
+    dataframe = pd.concat([dataframe, new_string.to_frame().T], ignore_index=True)
+    return dataframe
+
+info_dict = {'akies': ['актинический кератоз/болезнь Боуэна L57.0/D04.9', 'предрак', 'дерматолог'],
+             'bcc': ['базалиома D48', 'рак', 'онколог'],
+             'bkl': ['доброкачественные поражения, подобные кератозу ', 'ок', 'дома'],
+             'df': ['дерматофиброма D23.9', 'ок', 'дерматолог'],
+             'mel': ['меланома D48', 'рак', 'онколог'],
+             'nv': ['меланоцитарный невус', 'ок', 'дома'],
+             'vasc': ['сосудистые поражения', 'ок', 'дома']}
+
+
+def pacient(path):
+  global df_doctor
+  pacientID = input('введите ваш id: ')
+  full_name = input('введите ваше ФИО: ')
+  disease = predict_class_image(path)
+  Typeofdisease = info_dict[disease][0]
+  Cancer_num = info_dict[disease][1]
+  doctor = info_dict[disease][2]
+  if Cancer_num == 'рак':
+    Canser = 2
+  elif Cancer_num == 'предрак':
+    Canser = 1
+  else:
+    Canser = 0
+  df_doctor = fill_string([pacientID, full_name, Typeofdisease, Canser], df_doctor)
+  if doctor == 'дерматолог':
+    return 'Запишитесь к врачу дерматологу'
+  if doctor == 'онколог':
+    return 'Запишитесь к врачу онкологу'
+  if doctor == 'дома':
+    return 'У вас все впорядке !'
+
+path_pacient = '/content/data_cancer/HAM10000_images_part_2/mel/ISIC_0029913.jpg'
+pacient(path_pacient)
+
+
+print(df_doctor)
