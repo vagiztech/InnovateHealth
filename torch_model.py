@@ -284,3 +284,59 @@ pacient(path_pacient)
 
 
 print(df_doctor)
+
+
+# Тест модели
+import torch.nn.functional as F
+# Функция для классификации изображения
+
+def classify_image(image_path, model):
+    input_tensor = load_and_preprocess_image(image_path)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    input_tensor = input_tensor.to(device)
+    # Передача изображения через модель
+    with torch.no_grad():
+        output = model(input_tensor)
+
+    # Получение предсказанного класса
+    _, predicted_class = torch.max(output, 1)
+    probabilities = F.softmax(output, dim=1)
+
+    return predicted_class.item(), probabilities
+# Загрузка обученной модели
+weights_path = '/content/weights30.pt'
+model = torch.load(weights_path)
+
+# Путь к папке с изображениями для классификации
+folder_path = '/content/data_cancer/ham10000_images_part_1'
+
+predicted_class_name = ['akiec', 'bcc', 'bkl', 'df', 'mel', 'nv', 'vasc']
+# Создание списка предсказаний
+predictions = []
+
+# Классификация изображений в папке
+for filename in os.listdir(folder_path):
+    image_path = os.path.join(folder_path, filename)
+    if os.path.isfile(image_path):
+        predicted_class, probabilities = classify_image(image_path, model)
+        image_id = filename.split('.')[0]
+        predictions.append((image_id, predicted_class_name[predicted_class]))
+
+# Создание DataFrame из списка предсказаний
+predictions_df = pd.DataFrame(predictions, columns=['image_id', 'predict'])
+
+# Объединение с исходным DataFrame 'metadata' по столбцу 'image_id'
+metadata = metadata.merge(predictions_df, on='image_id', how='left')
+# Очистка от NaN
+metadata_cleaned = metadata.dropna(subset=['dx', 'predict'])
+
+# Добавление столбца 'is_True'
+metadata_cleaned['is_True'] = (metadata_cleaned['dx'] == metadata_cleaned['predict']).astype(int)
+
+# Создание нового DataFrame 'result'
+result = metadata_cleaned[['dx', 'predict', 'is_True']].copy()
+
+statistics = result['is_True'].value_counts()
+total_rows = len(result)
+is_True_result = (statistics.iloc[1]/(statistics.iloc[0]+statistics.iloc[1])) * 100
+print(f'Модель совершила ошибку на не зависимых данных в {round(is_True_result,2)} % случаев.')
