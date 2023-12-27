@@ -220,7 +220,7 @@ print(f"Модель предсказывает класс: {predict_class_image
 
 
 # Функция для тестирования модели на папке с изображениями
-def test_model_lul(Patch):
+def test_folder(Patch):
     test_dict = {}
     folder_path = Patch
 
@@ -236,7 +236,7 @@ def test_model_lul(Patch):
     return test_dict
 
 # Пример вызова функции для тестирования модели на папке
-test_results = test_model_lul('/content/data_cancer/HAM10000_images_part_1/nv')
+test_results = test_folder('/content/data_cancer/HAM10000_images_part_1/nv')
 print(test_results)
 
 columns = ['pacientID','full name', 'Typeofdisease', 'Cancer']
